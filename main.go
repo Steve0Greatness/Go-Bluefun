@@ -35,4 +35,8 @@ func main() {
 	}
 	program := string(fileData)
 	commands := newline.Split(program, -1)
+	if commands[0] == "loop" {
+		commands = commands[1:]
+	}
+	fmt.Println(commands)
 }
