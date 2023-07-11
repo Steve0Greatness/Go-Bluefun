@@ -5,6 +5,15 @@ import (
 	"os"
 )
 
+func ArrayHas(needle interface{}, haystack []interface{}) bool {
+	for _, straw := range haystack {
+		if needle == straw {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	variables := map[interface{}]interface{}{}
 	arrays := map[interface{}]interface{}{}
