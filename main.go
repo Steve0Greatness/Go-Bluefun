@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 )
 
-func ArrayHas(needle interface{}, haystack []interface{}) bool {
+func ArrayHas(needle string, haystack []string) bool {
 	for _, straw := range haystack {
 		if needle == straw {
 			return true
@@ -19,7 +20,8 @@ func ArrayHas(needle interface{}, haystack []interface{}) bool {
 func main() {
 	// variables := map[interface{}]interface{}{}
 	// arrays := map[interface{}]interface{}{}
-	// ifState := true
+	// broken := false
+	runAllowed := true
 	// willLoop := false
 	newline := regexp.MustCompile("\r?\n")
 	args := os.Args[1:]
@@ -38,5 +40,37 @@ func main() {
 	if commands[0] == "loop" {
 		commands = commands[1:]
 	}
-	fmt.Println(commands)
+	for _, command := range commands {
+		// if broken {
+		// 	break
+		// }
+		if !runAllowed {
+			runAllowed = true
+			continue
+		}
+		command = strings.TrimLeft(command, " ")
+		if strings.HasPrefix(command, "# ") || command == "" {
+			continue
+		}
+		tokens := strings.Split(command, " ")
+
+		if ArrayHas(tokens[0], []string{"breaks", "clear", "year", "month", "date", "hour", "minute", "second"}) && len(tokens) > 1 {
+			log.Fatalf("Invalid usage of %s, it takes 0 arguments", tokens[0])
+		}
+		if ArrayHas(tokens[0], []string{"def", "defInCase", "setArrValue"}) && len(tokens) < 4 {
+			log.Fatalf("Invalid usage of %s, it takes at least 4 arguments", tokens[0])
+		}
+		if ArrayHas(tokens[0], []string{"wait", "getStrLength", "createArr"}) && len(tokens) != 2 {
+			log.Fatalf("Invalid usage of %s, it takes only 2 arguments", tokens[0])
+		}
+		if ArrayHas(tokens[0], []string{"random", "add", "sub", "mul", "div", "getArrValue", "getCharAt", "joinStr"}) && len(tokens) != 3 {
+			log.Fatalf("Invalid usage of %s, it takes only 3 arguments", tokens[0])
+		}
+		if ArrayHas(tokens[0], []string{"if"}) && len(tokens) != 4 {
+			log.Fatalf("Invalid usage of %s, it takes only 3 arguments", tokens[0])
+		}
+		if ArrayHas(tokens[0], []string{"loop"}) {
+			log.Fatalf("Invalid usage of %s, it can only go on the first line", tokens[0])
+		}
+	}
 }
