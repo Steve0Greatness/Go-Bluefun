@@ -5,8 +5,13 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
+
+var variables = map[string]interface{}{}
+
+// var arrays = map[string]interface{}{}
 
 func ArrayHas(needle string, haystack []string) bool {
 	for _, straw := range haystack {
@@ -17,9 +22,19 @@ func ArrayHas(needle string, haystack []string) bool {
 	return false
 }
 
+func evalExp(expression string) any {
+	val, ok := variables[expression[4:]]
+	if strings.HasPrefix(expression, "var:") && ok {
+		return val
+	}
+	floatVal, floatError := strconv.ParseFloat(expression, 64)
+	if floatError == nil {
+		return floatVal
+	}
+	return expression
+}
+
 func main() {
-	// variables := map[interface{}]interface{}{}
-	// arrays := map[interface{}]interface{}{}
 	// broken := false
 	runAllowed := true
 	// willLoop := false
@@ -71,6 +86,19 @@ func main() {
 		}
 		if ArrayHas(tokens[0], []string{"loop"}) {
 			log.Fatalf("Invalid usage of %s, it can only go on the first line", tokens[0])
+		}
+		switch tokens[0] {
+		case "write":
+			fmt.Print(evalExp(strings.Join(tokens[1:], " ")))
+		case "break":
+			fmt.Print("\n")
+		case "clear":
+			fmt.Print("\033[2J")
+		case "ask":
+			var input string
+			fmt.Print(evalExp(strings.Join(tokens[1:], " ")))
+			fmt.Scan(&input)
+			variables["res"] = input
 		}
 	}
 }
