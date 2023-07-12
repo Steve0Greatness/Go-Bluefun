@@ -34,10 +34,30 @@ func getVar(expression string) string {
 
 func getNumber(expression string) float64 {
 	floatVal, floatError := strconv.ParseFloat(expression, 64)
-	if floatError == nil {
+	if floatError != nil {
 		return floatVal
 	}
 	return 0
+}
+
+func ifBody(operation string, thing1 string, thing2 string) bool {
+	switch operation {
+	case "=":
+		return getVar(thing1) == getVar(thing2)
+	case ">":
+		sortable := []string{getVar(thing1), getVar(thing2)}
+		sort.Strings(sortable)
+		return sortable[0] == thing1
+	case "<":
+		sortable := []string{getVar(thing1), getVar(thing2)}
+		sort.Strings(sortable)
+		return sortable[1] == thing1
+	case "!=":
+		return getVar(operation) != getVar(operation)
+	default:
+		log.Fatalf("%s is an invalid operation.", operation)
+	}
+	return false
 }
 
 func main() {
@@ -87,8 +107,8 @@ func main() {
 		if ArrayHas(tokens[0], []string{"random", "add", "sub", "mul", "div", "getArrValue", "getCharAt", "joinStr"}) && len(tokens) != 3 {
 			log.Fatalf("Invalid usage of %s, it takes only 3 arguments", tokens[0])
 		}
-		if ArrayHas(tokens[0], []string{"if"}) && len(tokens) != 4 {
-			log.Fatalf("Invalid usage of %s, it takes only 3 arguments", tokens[0])
+		if tokens[0] == "if" && len(tokens)%4 == 0 {
+			log.Fatalf("Invalid usage of %s, arguments can only be in groups of 4", tokens[0])
 		}
 		if ArrayHas(tokens[0], []string{"loop"}) {
 			log.Fatalf("Invalid usage of %s, it can only go on the first line", tokens[0])
@@ -106,19 +126,14 @@ func main() {
 			fmt.Scan(&input)
 			variables["res"] = input
 		case "if":
-			switch tokens[2] {
-			case "=":
-				runAllowed = getVar(tokens[1]) == getVar(tokens[3])
-			case ">":
-				sortable := []string{getVar(tokens[1]), getVar(tokens[3])}
-				sort.Strings(sortable)
-				runAllowed = sortable[0] == tokens[1]
-			case "<":
-				sortable := []string{getVar(tokens[1]), getVar(tokens[3])}
-				sort.Strings(sortable)
-				runAllowed = sortable[1] == tokens[1]
-			default:
-				log.Fatalf("%s is an invalid operation.", tokens[2])
+			checks := strings.Split(strings.Join(tokens[1:], " "), " or ")
+			for checkIndex, check := range checks {
+				minTokenIndex := 3 * checkIndex
+				ifCheck := strings.Split(check, " ")
+				if !ifBody(ifCheck[minTokenIndex+1], ifCheck[minTokenIndex], ifCheck[minTokenIndex+2]) {
+					runAllowed = false
+					break
+				}
 			}
 		case "wait":
 			val, err := strconv.ParseFloat(tokens[1], 64)
