@@ -5,11 +5,13 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
-var variables = map[string]interface{}{}
+var variables = map[string]string{}
 
 // var arrays = map[string]interface{}{}
 
@@ -22,16 +24,20 @@ func ArrayHas(needle string, haystack []string) bool {
 	return false
 }
 
-func evalExp(expression string) any {
+func getVar(expression string) string {
 	val, ok := variables[expression[4:]]
 	if strings.HasPrefix(expression, "var:") && ok {
 		return val
 	}
+	return expression
+}
+
+func getNumber(expression string) float64 {
 	floatVal, floatError := strconv.ParseFloat(expression, 64)
 	if floatError == nil {
 		return floatVal
 	}
-	return expression
+	return 0
 }
 
 func main() {
@@ -89,16 +95,37 @@ func main() {
 		}
 		switch tokens[0] {
 		case "write":
-			fmt.Print(evalExp(strings.Join(tokens[1:], " ")))
+			fmt.Print(getVar(strings.Join(tokens[1:], " ")))
 		case "break":
 			fmt.Print("\n")
 		case "clear":
 			fmt.Print("\033[2J")
 		case "ask":
 			var input string
-			fmt.Print(evalExp(strings.Join(tokens[1:], " ")))
+			fmt.Print(getVar(strings.Join(tokens[1:], " ")))
 			fmt.Scan(&input)
 			variables["res"] = input
+		case "if":
+			switch tokens[2] {
+			case "=":
+				runAllowed = getVar(tokens[1]) == getVar(tokens[3])
+			case ">":
+				sortable := []string{getVar(tokens[1]), getVar(tokens[3])}
+				sort.Strings(sortable)
+				runAllowed = sortable[0] == tokens[1]
+			case "<":
+				sortable := []string{getVar(tokens[1]), getVar(tokens[3])}
+				sort.Strings(sortable)
+				runAllowed = sortable[1] == tokens[1]
+			default:
+				log.Fatalf("%s is an invalid operation.", tokens[2])
+			}
+		case "wait":
+			val, err := strconv.ParseFloat(tokens[1], 64)
+			if err != nil {
+				log.Fatalf("")
+			}
+			time.Sleep(time.Duration(val) * time.Second)
 		}
 	}
 }
