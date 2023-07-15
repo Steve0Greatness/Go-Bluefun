@@ -81,7 +81,7 @@ func main() {
 	if commands[0] == "loop" {
 		commands = commands[1:]
 	}
-	for _, command := range commands {
+	for line, command := range commands {
 		// if broken {
 		// 	break
 		// }
@@ -127,11 +127,14 @@ func main() {
 			variables["res"] = input
 		case "if":
 			checks := strings.Split(strings.Join(tokens[1:], " "), " or ")
-			for checkIndex, check := range checks {
-				minTokenIndex := 3 * checkIndex
+			if len(checks) < len(tokens)/4 {
+				log.Fatalf("Line #%d has unneeded data after the last valid boolean check(shown):\n%s", line, strings.Join(strings.Split(checks[len(checks)-1], " ")[:2], " "))
+			}
+			runAllowed = false
+			for _, check := range checks {
 				ifCheck := strings.Split(check, " ")
-				if !ifBody(ifCheck[minTokenIndex+1], ifCheck[minTokenIndex], ifCheck[minTokenIndex+2]) {
-					runAllowed = false
+				if ifBody(ifCheck[1], ifCheck[0], ifCheck[2]) {
+					runAllowed = true
 					break
 				}
 			}
