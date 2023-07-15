@@ -148,6 +148,7 @@ func main() {
 			variables[tokens[1]] = getVar(tokens[2])
 		case "createArr":
 			arrays[tokens[1]] = []interface{}{}
+		case "setArrValue":
 		}
 	}
 }
