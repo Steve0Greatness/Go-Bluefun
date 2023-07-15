@@ -13,7 +13,7 @@ import (
 
 var variables = map[string]string{}
 
-// var arrays = map[string]interface{}{}
+var arrays = map[string][]interface{}{}
 
 func ArrayHas(needle string, haystack []string) bool {
 	for _, straw := range haystack {
@@ -144,6 +144,10 @@ func main() {
 				log.Fatalf("")
 			}
 			time.Sleep(time.Duration(val) * time.Second)
+		case "def":
+			variables[tokens[1]] = getVar(tokens[2])
+		case "createArr":
+			arrays[tokens[1]] = []interface{}{}
 		}
 	}
 }
