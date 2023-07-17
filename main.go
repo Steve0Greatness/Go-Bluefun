@@ -25,20 +25,12 @@ func ArrayHas(needle string, haystack []string) bool {
 }
 
 func getVar(expression string) string {
-	val, ok := variables[expression[4:]]
-	if strings.HasPrefix(expression, "var:") && ok {
+	if strings.HasPrefix(expression, "var:") {
+		val, _ := variables[expression[4:]]
 		return val
 	}
 	return expression
 }
-
-// func getNumber(expression string) float64 {
-// 	floatVal, floatError := strconv.ParseFloat(expression, 64)
-// 	if floatError != nil {
-// 		return floatVal
-// 	}
-// 	return 0
-// }
 
 func ifBody(operation string, thing1 string, thing2 string) bool {
 	switch operation {
@@ -115,6 +107,7 @@ func main() {
 		}
 		switch tokens[0] {
 		case "write":
+			// fmt.Printf("print called on line %d:\ntokens len: %d\n", line, len(tokens))
 			fmt.Print(getVar(strings.Join(tokens[1:], " ")))
 		case "break":
 			fmt.Print("\n")
@@ -145,7 +138,7 @@ func main() {
 			}
 			time.Sleep(time.Duration(val) * time.Second)
 		case "def":
-			variables[tokens[1]] = getVar(tokens[2])
+			variables[tokens[1]] = getVar(strings.Join(tokens[3:], " "))
 		case "createArr":
 			arrays[tokens[1]] = []string{}
 		case "setArrValue":
@@ -156,12 +149,12 @@ func main() {
 			var number int64
 			switch tokens[2] {
 			case "next":
-				number = int64(len(array))
+				number = int64(len(array)) - 1
 			default:
 				var err error
 				number, err = strconv.ParseInt(tokens[2], 10, 64)
 				if err != nil {
-					log.Fatal("setArrValue ")
+					log.Fatal("Cannot take a non-integer as input")
 				}
 			}
 			if len(array)-1 < int(number) {
@@ -176,9 +169,21 @@ func main() {
 			}
 			number, err := strconv.ParseInt(tokens[2], 10, 32)
 			if err != nil {
-				log.Fatal("setArrValue ")
+				log.Fatal("Cannot take a non-integer as input")
 			}
 			variables["res"] = fmt.Sprintf("%v", array[number])
+		case "getCharAt":
+			number, err := strconv.ParseInt(tokens[2], 10, 32)
+			if err != nil {
+				log.Fatal("Cannot take a non-integer as input")
+			}
+			variables["res"] = string([]rune(getVar(tokens[1]))[number])
+		case "getStrLength":
+			str := getVar(tokens[1])
+			variables["res"] = fmt.Sprint(len(str))
+		case "joinStr":
+			strs := []string{getVar(tokens[1]), getVar(tokens[2])}
+			variables["res"] = strings.Join(strs, "")
 		}
 	}
 }

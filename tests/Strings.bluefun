@@ -1,0 +1,22 @@
+def text = Hello, world!
+# String length
+getStrLength var:text
+write "
+write var:text
+write " is 
+write var:res
+write  characters long.
+break
+# Character at
+getCharAt var:text 3
+write The third letter in "
+write var:text
+write " is "
+write var:res
+write "
+break
+# Join strings
+def addendum =  Welcome home.
+joinStr var:text var:addendum
+break
+write var:res
