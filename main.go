@@ -164,8 +164,8 @@ func main() {
 					log.Fatal("setArrValue ")
 				}
 			}
-			if len(array)-1 <= int(number) {
-				newArr := make([]string, len(array)-int(number))
+			if len(array)-1 < int(number) {
+				newArr := make([]string, int(number)-len(array)+1)
 				arrays[tokens[1]] = append(arrays[tokens[1]], newArr...)
 			}
 			arrays[tokens[1]][number] = strings.Join(tokens[3:], " ")
