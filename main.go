@@ -13,7 +13,7 @@ import (
 
 var variables = map[string]string{}
 
-var arrays = map[string][]interface{}{}
+var arrays = map[string][]string{}
 
 func ArrayHas(needle string, haystack []string) bool {
 	for _, straw := range haystack {
@@ -32,13 +32,13 @@ func getVar(expression string) string {
 	return expression
 }
 
-func getNumber(expression string) float64 {
-	floatVal, floatError := strconv.ParseFloat(expression, 64)
-	if floatError != nil {
-		return floatVal
-	}
-	return 0
-}
+// func getNumber(expression string) float64 {
+// 	floatVal, floatError := strconv.ParseFloat(expression, 64)
+// 	if floatError != nil {
+// 		return floatVal
+// 	}
+// 	return 0
+// }
 
 func ifBody(operation string, thing1 string, thing2 string) bool {
 	switch operation {
@@ -147,8 +147,38 @@ func main() {
 		case "def":
 			variables[tokens[1]] = getVar(tokens[2])
 		case "createArr":
-			arrays[tokens[1]] = []interface{}{}
+			arrays[tokens[1]] = []string{}
 		case "setArrValue":
+			array, ok := arrays[tokens[1]]
+			if !ok {
+				log.Fatalf("%s is not an array.", tokens[1])
+			}
+			var number int64
+			switch tokens[2] {
+			case "next":
+				number = int64(len(array))
+			default:
+				var err error
+				number, err = strconv.ParseInt(tokens[2], 10, 64)
+				if err != nil {
+					log.Fatal("setArrValue ")
+				}
+			}
+			if len(array)-1 <= int(number) {
+				newArr := make([]string, len(array)-int(number))
+				arrays[tokens[1]] = append(arrays[tokens[1]], newArr...)
+			}
+			arrays[tokens[1]][number] = strings.Join(tokens[3:], " ")
+		case "getArrValue":
+			array, ok := arrays[tokens[1]]
+			if !ok {
+				log.Fatalf("%s is not an array.", tokens[1])
+			}
+			number, err := strconv.ParseInt(tokens[2], 10, 32)
+			if err != nil {
+				log.Fatal("setArrValue ")
+			}
+			variables["res"] = fmt.Sprintf("%v", array[number])
 		}
 	}
 }

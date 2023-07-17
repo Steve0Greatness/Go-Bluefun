@@ -1,0 +1,4 @@
+createArr Hello
+setArrValue Hello 0 YOOOOO
+getArrValue Hello 0
+write var:res
