@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
+	"math/rand"
 	"os"
 	"regexp"
 	"sort"
@@ -227,6 +229,13 @@ func main() {
 		case "second":
 			current := time.Now()
 			variables["res"] = fmt.Sprint(current.Second())
+		case "random":
+			high, err := strconv.ParseFloat(getVar(tokens[2]), 64)
+			low, lErr := strconv.ParseFloat(getVar(tokens[1]), 64)
+			if lErr != nil || err != nil {
+				log.Fatalf("both the high and low for random must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(math.Floor(rand.Float64()*(high-low+1)) + low)
 		}
 	}
 }
