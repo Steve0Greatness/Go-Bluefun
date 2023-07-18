@@ -87,7 +87,6 @@ func main() {
 		}
 		tokens := strings.Split(command, " ")
 
-		fmt.Printf("%d\n", len(tokens))
 		if ArrayHas(tokens[0], []string{"breaks", "clear", "year", "month", "date", "hour", "minute", "second"}) && len(tokens) > 1 {
 			log.Fatalf("Invalid usage of %s, it takes 0 arguments", tokens[0])
 		}
