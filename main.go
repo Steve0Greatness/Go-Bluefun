@@ -57,7 +57,7 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 func main() {
 	// broken := false
 	runAllowed := true
-	// willLoop := false
+	willLoop := false
 	newline := regexp.MustCompile("\r?\n")
 	args := os.Args[1:]
 	if len(args) < 1 {
@@ -73,12 +73,10 @@ func main() {
 	program := string(fileData)
 	commands := newline.Split(program, -1)
 	if commands[0] == "loop" {
+		willLoop = true
 		commands = commands[1:]
 	}
 	for line, command := range commands {
-		// if broken {
-		// 	break
-		// }
 		if !runAllowed {
 			runAllowed = true
 			continue
@@ -89,6 +87,7 @@ func main() {
 		}
 		tokens := strings.Split(command, " ")
 
+		fmt.Printf("%d\n", len(tokens))
 		if ArrayHas(tokens[0], []string{"breaks", "clear", "year", "month", "date", "hour", "minute", "second"}) && len(tokens) > 1 {
 			log.Fatalf("Invalid usage of %s, it takes 0 arguments", tokens[0])
 		}
@@ -101,7 +100,7 @@ func main() {
 		if ArrayHas(tokens[0], []string{"random", "add", "sub", "mul", "div", "getArrValue", "getCharAt", "joinStr"}) && len(tokens) != 3 {
 			log.Fatalf("Invalid usage of %s, it takes only 3 arguments", tokens[0])
 		}
-		if tokens[0] == "if" && len(tokens)%4 == 0 {
+		if tokens[0] == "if" && len(tokens)%4 != 0 {
 			log.Fatalf("Invalid usage of %s, arguments can only be in groups of 4", tokens[0])
 		}
 		if ArrayHas(tokens[0], []string{"loop"}) {
@@ -109,7 +108,6 @@ func main() {
 		}
 		switch tokens[0] {
 		case "write":
-			// fmt.Printf("print called on line %d:\ntokens len: %d\n", line, len(tokens))
 			fmt.Print(getVar(strings.Join(tokens[1:], " ")))
 		case "break":
 			fmt.Print("\n")
@@ -236,6 +234,39 @@ func main() {
 				log.Fatalf("both the high and low for random must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(math.Floor(rand.Float64()*(high-low+1)) + low)
+		case "add":
+			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
+			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
+			if err1 != nil || err2 != nil {
+				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(num1 + num2)
+		case "sub":
+			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
+			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
+			if err1 != nil || err2 != nil {
+				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(num1 - num2)
+		case "mul":
+			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
+			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
+			if err1 != nil || err2 != nil {
+				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(num1 * num2)
+		case "div":
+			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
+			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
+			if err1 != nil || err2 != nil {
+				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(num1 / num2)
+		case "stop":
+			return
 		}
+	}
+	if willLoop {
+		main()
 	}
 }

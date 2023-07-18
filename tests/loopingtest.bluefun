@@ -1,0 +1,6 @@
+loop
+if var:res = 0
+write /
+if var:res = 1
+write \
+random 0 1
