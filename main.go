@@ -55,7 +55,6 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 }
 
 func main() {
-	// broken := false
 	runAllowed := true
 	willLoop := false
 	newline := regexp.MustCompile("\r?\n")
@@ -266,6 +265,7 @@ func main() {
 		}
 	}
 	if willLoop {
+		time.Sleep(100 * time.Millisecond)
 		main()
 	}
 }
