@@ -209,6 +209,24 @@ func main() {
 				log.Fatalf("%s is not a number", tokens[1])
 			}
 			variables[tokens[1]] = fmt.Sprint(number + 1)
+		case "year":
+			current := time.Now()
+			variables["res"] = fmt.Sprint(current.Year())
+		case "month":
+			current := time.Now()
+			variables["res"] = fmt.Sprint(current.Month())
+		case "date":
+			current := time.Now()
+			variables["res"] = fmt.Sprint(current.Date())
+		case "hour":
+			current := time.Now()
+			variables["res"] = fmt.Sprint(current.Hour())
+		case "minute":
+			current := time.Now()
+			variables["res"] = fmt.Sprint(current.Minute())
+		case "second":
+			current := time.Now()
+			variables["res"] = fmt.Sprint(current.Second())
 		}
 	}
 }
