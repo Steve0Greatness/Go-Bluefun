@@ -139,6 +139,11 @@ func main() {
 			time.Sleep(time.Duration(val) * time.Second)
 		case "def":
 			variables[tokens[1]] = getVar(strings.Join(tokens[3:], " "))
+		case "defInCase":
+			_, ok := variables[tokens[1]]
+			if !ok {
+				variables[tokens[1]] = getVar(strings.Join(tokens[3:], " "))
+			}
 		case "createArr":
 			arrays[tokens[1]] = []string{}
 		case "setArrValue":
@@ -184,6 +189,26 @@ func main() {
 		case "joinStr":
 			strs := []string{getVar(tokens[1]), getVar(tokens[2])}
 			variables["res"] = strings.Join(strs, "")
+		case "-":
+			val, ok := variables[tokens[1]]
+			if !ok {
+				log.Fatalf("%s is not a variable", tokens[1])
+			}
+			number, err := strconv.ParseFloat(val, 64)
+			if err != nil {
+				log.Fatalf("%s is not a number", tokens[1])
+			}
+			variables[tokens[1]] = fmt.Sprint(number - 1)
+		case "+":
+			val, ok := variables[tokens[1]]
+			if !ok {
+				log.Fatalf("%s is not a variable", tokens[1])
+			}
+			number, err := strconv.ParseFloat(val, 64)
+			if err != nil {
+				log.Fatalf("%s is not a number", tokens[1])
+			}
+			variables[tokens[1]] = fmt.Sprint(number + 1)
 		}
 	}
 }
