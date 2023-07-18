@@ -14,7 +14,7 @@ import (
 )
 
 var variables = map[string]string{}
-
+var line int
 var arrays = map[string][]string{}
 
 func ArrayHas(needle string, haystack []string) bool {
@@ -49,7 +49,7 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 	case "!=":
 		return getVar(operation) != getVar(operation)
 	default:
-		log.Fatalf("%s is an invalid operation.", operation)
+		log.Fatalf("Line %d: %s is an invalid operation.", line, operation)
 	}
 	return false
 }
@@ -75,7 +75,8 @@ func main() {
 		willLoop = true
 		commands = commands[1:]
 	}
-	for line, command := range commands {
+	var command string
+	for line, command = range commands {
 		if !runAllowed {
 			runAllowed = true
 			continue
@@ -87,22 +88,22 @@ func main() {
 		tokens := strings.Split(command, " ")
 
 		if ArrayHas(tokens[0], []string{"breaks", "clear", "year", "month", "date", "hour", "minute", "second"}) && len(tokens) > 1 {
-			log.Fatalf("Invalid usage of %s, it takes 0 arguments", tokens[0])
+			log.Fatalf("Line %d: Invalid usage of %s, it takes 0 arguments", line, tokens[0])
 		}
 		if ArrayHas(tokens[0], []string{"def", "defInCase", "setArrValue"}) && len(tokens) < 4 {
-			log.Fatalf("Invalid usage of %s, it takes at least 4 arguments", tokens[0])
+			log.Fatalf("Line %d: Invalid usage of %s, it takes at least 4 arguments", line, tokens[0])
 		}
 		if ArrayHas(tokens[0], []string{"wait", "getStrLength", "createArr"}) && len(tokens) != 2 {
-			log.Fatalf("Invalid usage of %s, it takes only 2 arguments", tokens[0])
+			log.Fatalf("Line %d: Invalid usage of %s, it takes only 2 arguments", line, tokens[0])
 		}
 		if ArrayHas(tokens[0], []string{"random", "add", "sub", "mul", "div", "getArrValue", "getCharAt", "joinStr"}) && len(tokens) != 3 {
-			log.Fatalf("Invalid usage of %s, it takes only 3 arguments", tokens[0])
+			log.Fatalf("Line %d: Invalid usage of %s, it takes only 3 arguments", line, tokens[0])
 		}
 		if tokens[0] == "if" && len(tokens)%4 != 0 {
-			log.Fatalf("Invalid usage of %s, arguments can only be in groups of 4", tokens[0])
+			log.Fatalf("Line %d: Invalid usage of %s, arguments can only be in groups of 4", line, tokens[0])
 		}
 		if ArrayHas(tokens[0], []string{"loop"}) {
-			log.Fatalf("Invalid usage of %s, it can only go on the first line", tokens[0])
+			log.Fatalf("Line %d: Invalid usage of %s, it can only go on the first line", line, tokens[0])
 		}
 		switch tokens[0] {
 		case "write":
@@ -119,7 +120,7 @@ func main() {
 		case "if":
 			checks := strings.Split(strings.Join(tokens[1:], " "), " or ")
 			if len(checks) < len(tokens)/4 {
-				log.Fatalf("Line #%d has unneeded data after the last valid boolean check(shown):\n%s", line, strings.Join(strings.Split(checks[len(checks)-1], " ")[:2], " "))
+				log.Fatalf("Line %d has unneeded data after the last valid boolean check(shown):\n%s", line, strings.Join(strings.Split(checks[len(checks)-1], " ")[:2], " "))
 			}
 			runAllowed = false
 			for _, check := range checks {
@@ -132,7 +133,7 @@ func main() {
 		case "wait":
 			val, err := strconv.ParseFloat(tokens[1], 64)
 			if err != nil {
-				log.Fatalf("")
+				log.Fatalf("Line %d: cannot wait for a non-number", line)
 			}
 			time.Sleep(time.Duration(val) * time.Second)
 		case "def":
@@ -147,7 +148,7 @@ func main() {
 		case "setArrValue":
 			array, ok := arrays[tokens[1]]
 			if !ok {
-				log.Fatalf("%s is not an array.", tokens[1])
+				log.Fatalf("Line %d: %s is not an array.", line, tokens[1])
 			}
 			var number int64
 			switch tokens[2] {
@@ -157,7 +158,7 @@ func main() {
 				var err error
 				number, err = strconv.ParseInt(tokens[2], 10, 64)
 				if err != nil {
-					log.Fatal("Cannot take a non-integer as input")
+					log.Fatalf("Line %d: Cannot take a non-integer as input", line)
 				}
 			}
 			if len(array)-1 < int(number) {
@@ -168,17 +169,17 @@ func main() {
 		case "getArrValue":
 			array, ok := arrays[tokens[1]]
 			if !ok {
-				log.Fatalf("%s is not an array.", tokens[1])
+				log.Fatalf("Line %d: %s is not an array.", line, tokens[1])
 			}
 			number, err := strconv.ParseInt(tokens[2], 10, 32)
 			if err != nil {
-				log.Fatal("Cannot take a non-integer as input")
+				log.Fatalf("Line %d: Cannot take a non-integer as input", line)
 			}
 			variables["res"] = fmt.Sprintf("%v", array[number])
 		case "getCharAt":
 			number, err := strconv.ParseInt(tokens[2], 10, 32)
 			if err != nil {
-				log.Fatal("Cannot take a non-integer as input")
+				log.Fatalf("Line %d: Cannot take a non-integer as input", line)
 			}
 			variables["res"] = string([]rune(getVar(tokens[1]))[number])
 		case "getStrLength":
@@ -190,21 +191,21 @@ func main() {
 		case "-":
 			val, ok := variables[tokens[1]]
 			if !ok {
-				log.Fatalf("%s is not a variable", tokens[1])
+				log.Fatalf("Line %d: %s is not a variable", line, tokens[1])
 			}
 			number, err := strconv.ParseFloat(val, 64)
 			if err != nil {
-				log.Fatalf("%s is not a number", tokens[1])
+				log.Fatalf("Line %d: %s is not a number", line, tokens[1])
 			}
 			variables[tokens[1]] = fmt.Sprint(number - 1)
 		case "+":
 			val, ok := variables[tokens[1]]
 			if !ok {
-				log.Fatalf("%s is not a variable", tokens[1])
+				log.Fatalf("Line %d: %s is not a variable", line, tokens[1])
 			}
 			number, err := strconv.ParseFloat(val, 64)
 			if err != nil {
-				log.Fatalf("%s is not a number", tokens[1])
+				log.Fatalf("Line %d: %s is not a number", line, tokens[1])
 			}
 			variables[tokens[1]] = fmt.Sprint(number + 1)
 		case "year":
@@ -229,39 +230,41 @@ func main() {
 			high, err := strconv.ParseFloat(getVar(tokens[2]), 64)
 			low, lErr := strconv.ParseFloat(getVar(tokens[1]), 64)
 			if lErr != nil || err != nil {
-				log.Fatalf("both the high and low for random must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+				log.Fatalf("Line %d: Both the high and low for random must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(math.Floor(rand.Float64()*(high-low+1)) + low)
 		case "add":
 			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
 			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
 			if err1 != nil || err2 != nil {
-				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(num1 + num2)
 		case "sub":
 			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
 			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
 			if err1 != nil || err2 != nil {
-				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(num1 - num2)
 		case "mul":
 			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
 			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
 			if err1 != nil || err2 != nil {
-				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(num1 * num2)
 		case "div":
 			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
 			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
 			if err1 != nil || err2 != nil {
-				log.Fatalf("both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", getVar(tokens[1]), getVar(tokens[2]))
+				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(num1 / num2)
 		case "stop":
 			return
+		default:
+			log.Fatalf("Line %d: Unrecognized command: %s", line, tokens[0])
 		}
 	}
 	if willLoop {
