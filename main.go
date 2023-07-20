@@ -77,15 +77,18 @@ func main() {
 	}
 	var command string
 	for line, command = range commands {
-		if !runAllowed {
-			runAllowed = true
-			continue
-		}
 		command = strings.TrimLeft(command, " ")
 		if strings.HasPrefix(command, "# ") || command == "" {
 			continue
 		}
 		tokens := strings.Split(command, " ")
+
+		if !runAllowed {
+			if tokens[0] != "if" {
+				runAllowed = true
+			}
+			continue
+		}
 
 		if ArrayHas(tokens[0], []string{"breaks", "clear", "year", "month", "date", "hour", "minute", "second"}) && len(tokens) > 1 {
 			log.Fatalf("Line %d: Invalid usage of %s, it takes 0 arguments", line, tokens[0])
