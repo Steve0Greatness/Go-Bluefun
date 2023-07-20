@@ -1,4 +1,7 @@
 if 1 = 0
 if 1 = 1
 write Hello there
-write This should be the only output
+write This should be the first output
+break
+if 1 = 0 or viva = la-vida or ok = ok
+write OOOOOOOOOOOOOO
