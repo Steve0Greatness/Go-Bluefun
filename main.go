@@ -6,7 +6,9 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"os/exec"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -24,6 +26,26 @@ func ArrayHas(needle string, haystack []string) bool {
 		}
 	}
 	return false
+}
+
+func OpenBrowser(url string) {
+	// https://gist.github.com/hyg/9c4afcd91fe24316cbf0
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func getVar(expression string) string {
@@ -55,6 +77,7 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 }
 
 func main() {
+	var program string
 	runAllowed := true
 	willLoop := false
 	newline := regexp.MustCompile("\r?\n")
@@ -62,14 +85,26 @@ func main() {
 	if len(args) < 1 {
 		fmt.Println("Looks like the command you attempted to run seems to be mal-formed. Here's what your command should look like:")
 		fmt.Printf("%s <path/to/file.bluefun>\n", os.Args[0])
+		fmt.Println("You can also run -help to see a list of commands.")
 		return
 	}
-	fileData, fileError := os.ReadFile(args[0])
-	if fileError != nil {
-		log.Fatalf("Failed to read %s\n", args[0])
+	switch args[0] {
+	case "-help", "-h", "--help":
+		fmt.Printf(`%s [command]/<path/to/file.bluefun
+-help : print a list of all possible command line arguments
+-docs : open the docs webpage`, os.Args[0])
 		return
+	case "-docs":
+		OpenBrowser("https://github.com/Steve0Greatness/Go-Bluefun/wiki")
+		return
+	default:
+		fileData, fileError := os.ReadFile(args[0])
+		if fileError != nil {
+			log.Fatalf("Failed to read %s\n", args[0])
+			return
+		}
+		program = string(fileData)
 	}
-	program := string(fileData)
 	commands := newline.Split(program, -1)
 	if commands[0] == "loop" {
 		willLoop = true
@@ -146,6 +181,26 @@ func main() {
 			if !ok {
 				variables[tokens[1]] = getVar(strings.Join(tokens[3:], " "))
 			}
+		case "-":
+			val, ok := variables[tokens[1]]
+			if !ok {
+				log.Fatalf("Line %d: %s is not a variable", line, tokens[1])
+			}
+			number, err := strconv.ParseFloat(val, 64)
+			if err != nil {
+				log.Fatalf("Line %d: %s is not a number", line, tokens[1])
+			}
+			variables[tokens[1]] = fmt.Sprint(number - 1)
+		case "+":
+			val, ok := variables[tokens[1]]
+			if !ok {
+				log.Fatalf("Line %d: %s is not a variable", line, tokens[1])
+			}
+			number, err := strconv.ParseFloat(val, 64)
+			if err != nil {
+				log.Fatalf("Line %d: %s is not a number", line, tokens[1])
+			}
+			variables[tokens[1]] = fmt.Sprint(number + 1)
 		case "createArr":
 			arrays[tokens[1]] = []string{}
 		case "setArrValue":
@@ -188,29 +243,15 @@ func main() {
 		case "getStrLength":
 			str := getVar(tokens[1])
 			variables["res"] = fmt.Sprint(len(str))
+		case "getArrLength":
+			arr, ok := arrays[tokens[1]]
+			if !ok {
+				log.Fatalf("Line %d: %s is not an array", line, tokens[1])
+			}
+			variables["res"] = fmt.Sprint(len(arr))
 		case "joinStr":
 			strs := []string{getVar(tokens[1]), getVar(tokens[2])}
 			variables["res"] = strings.Join(strs, "")
-		case "-":
-			val, ok := variables[tokens[1]]
-			if !ok {
-				log.Fatalf("Line %d: %s is not a variable", line, tokens[1])
-			}
-			number, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				log.Fatalf("Line %d: %s is not a number", line, tokens[1])
-			}
-			variables[tokens[1]] = fmt.Sprint(number - 1)
-		case "+":
-			val, ok := variables[tokens[1]]
-			if !ok {
-				log.Fatalf("Line %d: %s is not a variable", line, tokens[1])
-			}
-			number, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				log.Fatalf("Line %d: %s is not a number", line, tokens[1])
-			}
-			variables[tokens[1]] = fmt.Sprint(number + 1)
 		case "year":
 			current := time.Now()
 			variables["res"] = fmt.Sprint(current.Year())
@@ -264,6 +305,31 @@ func main() {
 				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(num1 / num2)
+		case "mod":
+			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
+			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
+			if err1 != nil || err2 != nil {
+				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(math.Mod(num1, num2))
+		case "round":
+			num, err := strconv.ParseFloat(getVar(tokens[1]), 64)
+			if err != nil {
+				log.Fatalf("Line %d: The number for a calculation must be a number, instead got: %s", line, getVar(tokens[1]))
+			}
+			variables["res"] = fmt.Sprint(math.Round(num))
+		case "floor":
+			num, err := strconv.ParseFloat(getVar(tokens[1]), 64)
+			if err != nil {
+				log.Fatalf("Line %d: The number for a calculation must be a number, instead got: %s", line, getVar(tokens[1]))
+			}
+			variables["res"] = fmt.Sprint(math.Floor(num))
+		case "ceil":
+			num, err := strconv.ParseFloat(getVar(tokens[1]), 64)
+			if err != nil {
+				log.Fatalf("Line %d: The number for a calculation must be a number, instead got: %s", line, getVar(tokens[1]))
+			}
+			variables["res"] = fmt.Sprint(math.Ceil(num))
 		case "stop":
 			return
 		default:
