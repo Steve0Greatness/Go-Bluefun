@@ -1,0 +1,49 @@
+createArr months
+setArrValue months next Jan
+setArrValue months next Feb
+setArrValue months next Mar
+setArrValue months next Apr
+setArrValue months next May
+setArrValue months next Jun
+setArrValue months next Jul
+setArrValue months next Aug
+setArrValue months next Sep
+setArrValue months next Oct
+setArrValue months next Nov
+setArrValue months next Dec
+
+month
+getArrValue months var:res
+
+def space =  
+joinStr var:res var:space
+def parsed = var:res
+
+date
+joinStr var:parsed var:res
+
+def dateYearSep = , 
+joinStr var:res var:dateYearSep
+def parsed = var:res
+
+year
+joinStr var:parsed var:res
+joinStr var:res var:space
+def parsed = var:res
+
+hour
+joinStr var:res :
+def time = var:res
+
+minute
+joinStr var:time var:res
+joinStr var:res :
+def time = var:res
+
+second
+joinStr var:time var:res
+def time = var:res
+
+joinStr var:parsed var:time
+
+write var:res

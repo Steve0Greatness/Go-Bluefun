@@ -16,7 +16,7 @@ import (
 )
 
 var variables = map[string]string{}
-var line int
+var line int = 1
 var arrays = map[string][]string{}
 
 func ArrayHas(needle string, haystack []string) bool {
@@ -111,7 +111,8 @@ func main() {
 		commands = commands[1:]
 	}
 	var command string
-	for line, command = range commands {
+	for _, command = range commands {
+		line += 1
 		command = strings.TrimLeft(command, " ")
 		if strings.HasPrefix(command, "# ") || command == "" {
 			continue
@@ -211,11 +212,12 @@ func main() {
 			var number int64
 			switch tokens[2] {
 			case "next":
-				number = int64(len(array)) - 1
+				number = int64(len(array))
 			default:
 				var err error
-				number, err = strconv.ParseInt(tokens[2], 10, 64)
+				number, err = strconv.ParseInt(getVar(tokens[2]), 10, 64)
 				if err != nil {
+					fmt.Println(getVar(tokens[2]))
 					log.Fatalf("Line %d: Cannot take a non-integer as input", line)
 				}
 			}
@@ -225,17 +227,18 @@ func main() {
 			}
 			arrays[tokens[1]][number] = strings.Join(tokens[3:], " ")
 		case "getArrValue":
+			fmt.Println(tokens)
 			array, ok := arrays[tokens[1]]
 			if !ok {
 				log.Fatalf("Line %d: %s is not an array.", line, tokens[1])
 			}
-			number, err := strconv.ParseInt(tokens[2], 10, 32)
+			number, err := strconv.ParseInt(getVar(tokens[2]), 10, 32)
 			if err != nil {
-				log.Fatalf("Line %d: Cannot take a non-integer as input", line)
+				log.Fatalf("Line %d: getArrValue takes an integer as a second output, instead got: %s", line, getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprintf("%v", array[number])
 		case "getCharAt":
-			number, err := strconv.ParseInt(tokens[2], 10, 32)
+			number, err := strconv.ParseInt(getVar(tokens[2]), 10, 32)
 			if err != nil {
 				log.Fatalf("Line %d: Cannot take a non-integer as input", line)
 			}
@@ -257,10 +260,11 @@ func main() {
 			variables["res"] = fmt.Sprint(current.Year())
 		case "month":
 			current := time.Now()
-			variables["res"] = fmt.Sprint(current.Month())
+			month := int(current.Month()) - 1
+			variables["res"] = fmt.Sprint(month)
 		case "date":
 			current := time.Now()
-			variables["res"] = fmt.Sprint(current.Date())
+			variables["res"] = fmt.Sprint(current.Day())
 		case "hour":
 			current := time.Now()
 			variables["res"] = fmt.Sprint(current.Hour())
