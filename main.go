@@ -227,7 +227,6 @@ func main() {
 			}
 			arrays[tokens[1]][number] = strings.Join(tokens[3:], " ")
 		case "getArrValue":
-			fmt.Println(tokens)
 			array, ok := arrays[tokens[1]]
 			if !ok {
 				log.Fatalf("Line %d: %s is not an array.", line, tokens[1])
