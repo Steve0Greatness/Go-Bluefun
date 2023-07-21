@@ -312,6 +312,13 @@ func main() {
 				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
 			}
 			variables["res"] = fmt.Sprint(math.Mod(num1, num2))
+		case "pow":
+			num1, err1 := strconv.ParseFloat(getVar(tokens[1]), 64)
+			num2, err2 := strconv.ParseFloat(getVar(tokens[2]), 64)
+			if err1 != nil || err2 != nil {
+				log.Fatalf("Line %d: Both the 1st number and 2nd for a calculation must be numbers, instead got: %s, %s", line, getVar(tokens[1]), getVar(tokens[2]))
+			}
+			variables["res"] = fmt.Sprint(math.Pow(num1, num2))
 		case "round":
 			num, err := strconv.ParseFloat(getVar(tokens[1]), 64)
 			if err != nil {
