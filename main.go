@@ -63,11 +63,11 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 	case ">":
 		sortable := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortable)
-		return sortable[0] == thing1
+		return sortable[1] == thing1
 	case "<":
 		sortable := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortable)
-		return sortable[1] == thing1
+		return sortable[0] == thing1
 	case "!=":
 		return getVar(operation) != getVar(operation)
 	default:

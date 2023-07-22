@@ -5,3 +5,8 @@ write This should be the first output
 break
 if 1 = 0 or viva = la-vida or ok = ok
 write OOOOOOOOOOOOOO
+
+if a > b
+write true
+if 1 < 2
+write true2
