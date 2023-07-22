@@ -57,23 +57,25 @@ func getVar(expression string) string {
 }
 
 func ifBody(operation string, thing1 string, thing2 string) bool {
+	// TODO: Figure out what's going on with the stupid != operator
+	var returned bool = false
 	switch operation {
 	case "=":
-		return getVar(thing1) == getVar(thing2)
+		returned = getVar(thing1) == getVar(thing2)
 	case ">":
 		sortable := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortable)
-		return sortable[1] == thing1
+		returned = sortable[1] == thing1
 	case "<":
 		sortable := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortable)
-		return sortable[0] == thing1
+		returned = sortable[0] == thing1
 	case "!=":
-		return getVar(operation) != getVar(operation)
+		returned = getVar(operation) != getVar(operation)
 	default:
 		log.Fatalf("Line %d: %s is an invalid operation.", line, operation)
 	}
-	return false
+	return returned
 }
 
 func main() {
