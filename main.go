@@ -30,7 +30,7 @@ func ArrayHas(needle string, haystack []string) bool {
 
 func OpenBrowser(url string) {
 	// https://gist.github.com/hyg/9c4afcd91fe24316cbf0
-	var err error
+	var err error = nil
 
 	switch runtime.GOOS {
 	case "linux":
@@ -40,7 +40,7 @@ func OpenBrowser(url string) {
 	case "darwin":
 		err = exec.Command("open", url).Start()
 	default:
-		err = fmt.Errorf("unsupported platform")
+		fmt.Printf("I'm unable to automatically open your browser for you. Please navigate to this URL: %s", url)
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +71,7 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 		sort.Strings(sortable)
 		returned = sortable[0] == thing1
 	case "!=":
-		returned = getVar(operation) != getVar(operation)
+		returned = getVar(thing1) != getVar(thing2)
 	default:
 		log.Fatalf("Line %d: %s is an invalid operation.", line, operation)
 	}
