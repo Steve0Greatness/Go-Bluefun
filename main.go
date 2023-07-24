@@ -15,6 +15,9 @@ import (
 	"time"
 )
 
+const versionName string = "PREv0.1.0"
+const docsUrl string = "https://github.com/Steve0Greatness/Go-Bluefun/wiki"
+
 var variables = map[string]string{}
 var line int = 1
 var arrays = map[string][]string{}
@@ -90,23 +93,49 @@ func main() {
 You can also run -help to see a list of commands.`, os.Args[0])
 		return
 	}
-	switch args[0] {
-	case "-help", "-h", "--help":
-		fmt.Printf(`%s [command]/<path/to/file.bluefun
+	for range args {
+		switch args[0] {
+		case "-help", "-h", "--help":
+			fmt.Printf(`%s [args] <path/to/file.bluefun
 -help : print a list of all possible command line arguments
--docs : open the docs webpage`, os.Args[0])
-		return
-	case "-docs":
-		OpenBrowser("https://github.com/Steve0Greatness/Go-Bluefun/wiki")
-		return
-	default:
-		fileData, fileError := os.ReadFile(args[0])
-		if fileError != nil {
-			log.Fatalf("Failed to read %s\n", args[0])
-			return
+-docs : open the docs webpage
+-ver  : print version information
+-info : print program details
+`, os.Args[0])
+			if len(args) == 1 {
+				return
+			}
+			args = args[1:]
+		case "-docs":
+			OpenBrowser(docsUrl)
+			if len(args) == 1 {
+				return
+			}
+			args = args[1:]
+		case "-version", "-v", "-ver":
+			fmt.Println(versionName)
+			if len(args) == 1 {
+				return
+			}
+			args = args[1:]
+		case "-info":
+			fmt.Print(`Go-BlueFun ~~ a Go(lang) implementation of BlueFun.
+Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en.html).
+`)
+			if len(args) == 1 {
+				return
+			}
+			args = args[1:]
+		default:
+			break
 		}
-		program = string(fileData)
 	}
+	fileData, fileError := os.ReadFile(args[0])
+	if fileError != nil {
+		log.Fatalf("Failed to read %s\n", args[0])
+		return
+	}
+	program = string(fileData)
 	commands := newline.Split(program, -1)
 	if commands[0] == "loop" {
 		willLoop = true
