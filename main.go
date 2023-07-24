@@ -85,9 +85,9 @@ func main() {
 	newline := regexp.MustCompile("\r?\n")
 	args := os.Args[1:]
 	if len(args) < 1 {
-		fmt.Println("Looks like the command you attempted to run seems to be mal-formed. Here's what your command should look like:")
-		fmt.Printf("%s <path/to/file.bluefun>\n", os.Args[0])
-		fmt.Println("You can also run -help to see a list of commands.")
+		fmt.Printf(`Looks like the command you attempted to run seems to be mal-formed. Here's what your command should look like:
+%s <path/to/file.bluefun>
+You can also run -help to see a list of commands.`, os.Args[0])
 		return
 	}
 	switch args[0] {
