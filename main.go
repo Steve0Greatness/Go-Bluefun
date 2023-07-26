@@ -101,6 +101,7 @@ You can also run -help to see a list of commands.`, os.Args[0])
 -docs : open the docs webpage
 -ver  : print version information
 -info : print program details
+-live : open the live env, and run commands
 `, os.Args[0])
 			if len(args) == 1 {
 				return
