@@ -93,7 +93,7 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 
 func showErrorF(format string, v ...any) {
 	if !runningLive {
-		fmt.Printf("Line %d", line)
+		fmt.Printf("Line %d: ", line)
 	}
 	fmt.Printf(format, v...)
 	if !runningLive {
@@ -476,10 +476,10 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 				return
 			}
 			args = args[1:]
-    case "-live":
-		  runningLive = true
-		  liveEnv()
-		  return
+		case "-live":
+			runningLive = true
+			liveEnv()
+			return
 		default:
 			break
 		}
