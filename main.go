@@ -22,6 +22,7 @@ var line int = 1
 var arrays = map[string][]string{}
 var runningLive = false
 var runAllowed = true
+var newline = regexp.MustCompile("\r?\n")
 
 var HelpText string = fmt.Sprintf(`%s [command]/<path/to/file.bluefun
 -help : print a list of all possible command line arguments
@@ -410,8 +411,8 @@ func liveEnv() {
 			showErrorF(fmt.Sprint(err))
 			continue
 		}
-		var tokens = strings.Split(strings.Trim(command, "\n"), " ")
-		fmt.Print(tokens)
+		command = newline.Split(command, -1)[0]
+		var tokens = strings.Split(command, " ")
 		if tokens[0] == "stop" {
 			fmt.Println("Ending BlueFun Live Environment -- Reason: [Stop Command]")
 			break
@@ -424,13 +425,13 @@ func liveEnv() {
 		if err != nil {
 			continue
 		}
+		fmt.Print("\n")
 	}
 }
 
 func main() {
 	var program string
 	willLoop := false
-	newline := regexp.MustCompile("\r?\n")
 	args := os.Args[1:]
 	if len(args) < 1 {
 		fmt.Println("Looks like the command you attempted to run seems to be mal-formed. Here's what your command should look like:")
