@@ -443,7 +443,7 @@ func liveEnv() {
 }
 
 func main() {
-	if runtime.GOOS != "windows" {
+	if ArrayHas(runtime.GOOS, []string{"windows"}) {
 		pathToFileBlueFun = "<path/to/file.bluefun>"
 	}
 	var program string
