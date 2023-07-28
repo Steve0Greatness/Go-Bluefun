@@ -1,0 +1,19 @@
+loop
+defInCase index = 0
+def isFB = 1
++ index
+mod var:index 3
+if var:res = 0
+write Fizz
+if var:res = 0
+def isFB = 0
+mod var:index 5
+if var:res = 0
+write Buzz
+if var:res = 0
+def isFB = 0
+if var:isFB = 1
+write var:index
+if var:index > 100 or var:index = 100
+stop
+break

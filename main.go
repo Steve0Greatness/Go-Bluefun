@@ -26,11 +26,9 @@ var arrays = map[string][]string{}
 var runningLive = false
 var runAllowed = true
 var newline = regexp.MustCompile("\r?\n")
+var willLoop = false
 
-var HelpText string = fmt.Sprintf(`%s [command]/<path/to/file.bluefun
--help : print a list of all possible command line arguments
--docs : open the docs webpage
--live : open the live environment`, os.Args[0])
+var loopDelay = true
 
 func ArrayHas(needle string, haystack []string) bool {
 	for _, straw := range haystack {
@@ -70,7 +68,6 @@ func getVar(expression string) string {
 }
 
 func ifBody(operation string, thing1 string, thing2 string) bool {
-	// TODO: Figure out what's going on with the stupid != operator
 	var returned bool = false
 	switch operation {
 	case "=":
@@ -78,11 +75,19 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 	case ">":
 		sortable := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortable)
-		returned = sortable[1] == thing1
+		returned = sortable[1] == getVar(thing1)
 	case "<":
 		sortable := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortable)
-		returned = sortable[0] == thing1
+		returned = sortable[0] == getVar(thing1)
+	case ">=":
+		sortable := []string{getVar(thing1), getVar(thing2)}
+		sort.Strings(sortable)
+		returned = sortable[1] == getVar(thing1) || getVar(thing1) == getVar(thing2)
+	case "<=":
+		sortable := []string{getVar(thing1), getVar(thing2)}
+		sort.Strings(sortable)
+		returned = sortable[0] == getVar(thing1) || getVar(thing1) == getVar(thing2)
 	case "!=":
 		returned = getVar(thing1) != getVar(thing2)
 	default:
@@ -351,6 +356,9 @@ func runTokens(tokens []string) error {
 		}
 		variables["res"] = fmt.Sprint(math.Ceil(num))
 	case "stop":
+		if willLoop {
+			willLoop = false
+		}
 		return nil
 	default:
 		errorText := fmt.Sprintf("Unrecognized command: %s", tokens[0])
@@ -434,7 +442,6 @@ func liveEnv() {
 
 func main() {
 	var program string
-	willLoop := false
 	args := os.Args[1:]
 	if len(args) < 1 {
 		fmt.Printf(`Looks like the command you attempted to run seems to be mal-formed. Here's what your command should look like:
@@ -446,6 +453,13 @@ You can also run -help to see a list of commands.`, os.Args[0])
 		switch args[0] {
 		case "-help", "-h", "--help":
 			fmt.Printf(`%s [args] <path/to/file.bluefun
+
+*RUN TIME OPTIONS*
+
+-no-loop-delay : removes the small delay from loops
+
+*PROGRAM DETAILS*
+
 -help : print a list of all possible command line arguments
 -docs : open the docs webpage
 -ver  : print version information
@@ -480,6 +494,12 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 			runningLive = true
 			liveEnv()
 			return
+		case "-no-loop-delay":
+			loopDelay = false
+			if len(args) == 1 {
+				showErrorF("Cannot set runtime options when no program is provided")
+			}
+			args = args[1:]
 		default:
 			break
 		}
@@ -515,7 +535,9 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 		runTokens(tokens)
 	}
 	if willLoop {
-		time.Sleep(100 * time.Millisecond)
+		if loopDelay {
+			time.Sleep(100 * time.Millisecond)
+		}
 		main()
 	}
 }
