@@ -30,6 +30,8 @@ var willLoop = false
 
 var loopDelay = true
 
+var pathToFileBlueFun = `<path\to\file.bluefun>`
+
 func ArrayHas(needle string, haystack []string) bool {
 	for _, straw := range haystack {
 		if needle == straw {
@@ -441,18 +443,21 @@ func liveEnv() {
 }
 
 func main() {
+	if runtime.GOOS != "windows" {
+		pathToFileBlueFun = "<path/to/file.bluefun>"
+	}
 	var program string
 	args := os.Args[1:]
 	if len(args) < 1 {
 		fmt.Printf(`Looks like the command you attempted to run seems to be mal-formed. Here's what your command should look like:
-%s <path/to/file.bluefun>
-You can also run -help to see a list of commands.`, os.Args[0])
+%s %s
+You can also run -help to see a list of commands.`, os.Args[0], pathToFileBlueFun)
 		return
 	}
 	for range args {
 		switch args[0] {
 		case "-help", "-h", "--help":
-			fmt.Printf(`%s [args] <path/to/file.bluefun
+			fmt.Printf(`%s [options] %s
 
 *RUN TIME OPTIONS*
 
@@ -465,7 +470,7 @@ You can also run -help to see a list of commands.`, os.Args[0])
 -ver  : print version information
 -info : print program details
 -live : open the live env, and run commands
-`, os.Args[0])
+`, os.Args[0], pathToFileBlueFun)
 			if len(args) == 1 {
 				return
 			}
