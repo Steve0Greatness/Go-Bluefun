@@ -69,27 +69,45 @@ func getVar(expression string) string {
 	return expression
 }
 
+func sortForThanOperations(thing1 string, thing2 string) []any {
+	sortable := []any{}
+	numberA, errorA := strconv.ParseFloat(getVar(thing1), 32)
+	numberB, errorB := strconv.ParseFloat(getVar(thing2), 32)
+	okA := errorA == nil
+	okB := errorB == nil
+	if okA && okB {
+		sortInts := []float64{numberA, numberB}
+		sort.Float64s(sortInts)
+		sortable = []any{sortInts[0], sortInts[1]}
+	} else if okA && !okB {
+		sortable = []any{numberA, thing2}
+	} else if !okA && okB {
+		sortable = []any{numberB, thing1}
+	} else if !okA && !okB {
+		sortStrs := []string{getVar(thing1), getVar(thing2)}
+		sort.Strings(sortStrs)
+		sortable = []any{sortStrs[0], sortStrs[1]}
+	}
+	return sortable
+}
+
 func ifBody(operation string, thing1 string, thing2 string) bool {
 	var returned bool = false
 	switch operation {
 	case "=":
 		returned = getVar(thing1) == getVar(thing2)
 	case ">":
-		sortable := []string{getVar(thing1), getVar(thing2)}
-		sort.Strings(sortable)
-		returned = sortable[1] == getVar(thing1)
-	case "<":
-		sortable := []string{getVar(thing1), getVar(thing2)}
-		sort.Strings(sortable)
+		sortable := sortForThanOperations(thing1, thing2)
 		returned = sortable[0] == getVar(thing1)
+	case "<":
+		sortable := sortForThanOperations(thing1, thing2)
+		returned = sortable[1] == getVar(thing1)
 	case ">=":
-		sortable := []string{getVar(thing1), getVar(thing2)}
-		sort.Strings(sortable)
-		returned = sortable[1] == getVar(thing1) || getVar(thing1) == getVar(thing2)
-	case "<=":
-		sortable := []string{getVar(thing1), getVar(thing2)}
-		sort.Strings(sortable)
+		sortable := sortForThanOperations(thing1, thing2)
 		returned = sortable[0] == getVar(thing1) || getVar(thing1) == getVar(thing2)
+	case "<=":
+		sortable := sortForThanOperations(thing1, thing2)
+		returned = sortable[1] == getVar(thing1) || getVar(thing1) == getVar(thing2)
 	case "!=":
 		returned = getVar(thing1) != getVar(thing2)
 	default:
