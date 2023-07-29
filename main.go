@@ -73,20 +73,21 @@ func sortForThanOperations(thing1 string, thing2 string) []any {
 	sortable := []any{}
 	numberA, errorA := strconv.ParseFloat(getVar(thing1), 32)
 	numberB, errorB := strconv.ParseFloat(getVar(thing2), 32)
-	okA := errorA == nil
-	okB := errorB == nil
-	if okA && okB {
+	switch ok := []bool{errorA == nil, errorB == nil}; {
+	case ok[0] && ok[1]:
 		sortInts := []float64{numberA, numberB}
 		sort.Float64s(sortInts)
 		sortable = []any{sortInts[0], sortInts[1]}
-	} else if okA && !okB {
+	case ok[0] && !ok[1]:
 		sortable = []any{numberA, thing2}
-	} else if !okA && okB {
+	case !ok[0] && ok[1]:
 		sortable = []any{numberB, thing1}
-	} else if !okA && !okB {
+	case !ok[0] && !ok[1]:
 		sortStrs := []string{getVar(thing1), getVar(thing2)}
 		sort.Strings(sortStrs)
 		sortable = []any{sortStrs[0], sortStrs[1]}
+	default:
+		showErrorF("Somehow, a condition wasn't covered: %t, %t", ok[0], ok[1])
 	}
 	return sortable
 }
