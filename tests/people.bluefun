@@ -1,0 +1,10 @@
+def PersonA = Jeffery
+def PersonB = Simon
+if PersonA = PersonB
+extend 5
+write var:PersonA
+write  and 
+write var:PersonB
+write are the same person.
+break
+write And that is that.
