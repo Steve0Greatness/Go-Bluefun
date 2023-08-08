@@ -6,17 +6,15 @@ def isFB = 1
 mod var:index 3
 
 if var:res = 0
+extend
 write Fizz
-
-if var:res = 0
-def isFB = 
+def isFB = 0
 
 mod var:index 5
 
 if var:res = 0
+extend
 write Buzz
-
-if var:res = 0
 def isFB = 0
 
 if var:isFB = 1

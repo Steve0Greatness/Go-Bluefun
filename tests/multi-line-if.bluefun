@@ -1,0 +1,5 @@
+if 0 = 1
+extend
+redlight
+write greenlight
+write and now this will print

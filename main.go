@@ -28,6 +28,7 @@ var runAllowed = true
 var newline = regexp.MustCompile("\r?\n")
 var willLoop = false
 
+var allowDebug = false
 var loopDelay = true
 
 var pathToFileBlueFun = `<path\to\file.bluefun>`
@@ -115,6 +116,13 @@ func ifBody(operation string, thing1 string, thing2 string) bool {
 		showErrorF("%s is an invalid operation.", operation)
 	}
 	return returned
+}
+
+func showDebugF(format string, v ...any) {
+	if !allowDebug {
+		return
+	}
+	fmt.Printf(format, v...)
 }
 
 func showErrorF(format string, v ...any) {
@@ -381,6 +389,8 @@ func runTokens(tokens []string) error {
 			willLoop = false
 		}
 		return nil
+	case "extend":
+		return nil
 	default:
 		errorText := fmt.Sprintf("Unrecognized command: %s", tokens[0])
 		showErrorF(errorText)
@@ -489,6 +499,8 @@ You can also run -help to see a list of commands.`, os.Args[0], pathToFileBlueFu
 -ver  : print version information
 -info : print program details
 -live : open the live env, and run commands
+-nld  : remove the delay between loops
+-ald  : Allow the interpreter to append it's own debugging <Language Development>
 `, os.Args[0], pathToFileBlueFun)
 			if len(args) == 1 {
 				return
@@ -518,11 +530,14 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 			runningLive = true
 			liveEnv()
 			return
-		case "-no-loop-delay":
+		case "-no-loop-delay", "-nld":
 			loopDelay = false
 			if len(args) == 1 {
 				showErrorF("Cannot set runtime options when no program is provided")
 			}
+			args = args[1:]
+		case "-allow-debug-prints", "-ald":
+			allowDebug = true
 			args = args[1:]
 		default:
 			break
@@ -540,6 +555,7 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 		commands = commands[1:]
 	}
 	var command string
+	extendIf := 0
 	for _, command = range commands {
 		line += 1
 		command = strings.TrimLeft(command, " ")
@@ -549,6 +565,25 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 		tokens := strings.Split(command, " ")
 
 		if !runAllowed {
+			showDebugF("Stopping execution of line %d: %s\n", line, command)
+			if tokens[0] == "extend" {
+				var toAdd int64 = 2
+				if len(tokens) >= 2 {
+					var numError error
+					toAdd, numError = strconv.ParseInt(tokens[1], 10, 64)
+					if numError != nil {
+						showErrorF("Cannot use %s to extend an if statement, it needs to be an integer.", tokens[1])
+					}
+				}
+				showDebugF("Adding %d from %d\n", int(toAdd), extendIf)
+				extendIf += int(toAdd) - 1
+				continue
+			}
+			if extendIf > 0 {
+				showDebugF("Removing 1 from %d\n", extendIf)
+				extendIf -= 1
+				continue
+			}
 			if tokens[0] != "if" {
 				runAllowed = true
 			}
