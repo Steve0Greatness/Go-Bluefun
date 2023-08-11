@@ -29,7 +29,7 @@ var newline = regexp.MustCompile("\r?\n")
 var willLoop = false
 
 var allowDebug = false
-var loopDelay = true
+var loopDelay = false
 
 var pathToFileBlueFun = `<path\to\file.bluefun>`
 
@@ -490,7 +490,8 @@ You can also run -help to see a list of commands.`, os.Args[0], pathToFileBlueFu
 
 *RUN TIME OPTIONS*
 
--no-loop-delay : removes the small delay from loops
+-eld  : Add a delay between loops, similar to how it works in the JavaScript version of BlueFun.
+-ald  : Allow the interpreter to append it's own debugging <Language Development>
 
 *PROGRAM DETAILS*
 
@@ -499,8 +500,6 @@ You can also run -help to see a list of commands.`, os.Args[0], pathToFileBlueFu
 -ver  : print version information
 -info : print program details
 -live : open the live env, and run commands
--nld  : remove the delay between loops
--ald  : Allow the interpreter to append it's own debugging <Language Development>
 `, os.Args[0], pathToFileBlueFun)
 			if len(args) == 1 {
 				return
@@ -530,14 +529,17 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 			runningLive = true
 			liveEnv()
 			return
-		case "-no-loop-delay", "-nld":
-			loopDelay = false
+		case "-enable-loop-delay", "-eld":
+			loopDelay = true
 			if len(args) == 1 {
 				showErrorF("Cannot set runtime options when no program is provided")
 			}
 			args = args[1:]
 		case "-allow-debug-prints", "-ald":
 			allowDebug = true
+			if len(args) == 1 {
+				showErrorF("Cannot set runtime options when no program is provided")
+			}
 			args = args[1:]
 		default:
 			break
