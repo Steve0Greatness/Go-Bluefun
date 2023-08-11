@@ -59,7 +59,6 @@ func OpenBrowser(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func getVar(expression string) string {
@@ -471,6 +470,59 @@ func liveEnv() {
 	}
 }
 
+func runProgram(program string) {
+	commands := newline.Split(program, -1)
+	if commands[0] == "loop" {
+		willLoop = true
+		commands = commands[1:]
+	}
+	var command string
+	extendIf := 0
+	for _, command = range commands {
+		line += 1
+		command = strings.TrimLeft(command, " ")
+		if strings.HasPrefix(command, "# ") || command == "" {
+			continue
+		}
+		tokens := strings.Split(command, " ")
+
+		if !runAllowed {
+			showDebugF("Stopping execution of line %d: %s\n", line, command)
+			if tokens[0] == "extend" {
+				var toAdd int64 = 2
+				if len(tokens) >= 2 {
+					var numError error
+					toAdd, numError = strconv.ParseInt(tokens[1], 10, 64)
+					if numError != nil {
+						showErrorF("Cannot use %s to extend an if statement, it needs to be an integer.", tokens[1])
+					}
+				}
+				showDebugF("Adding %d from %d\n", int(toAdd), extendIf)
+				extendIf += int(toAdd) - 1
+				continue
+			}
+			if extendIf > 0 {
+				showDebugF("Removing 1 from %d\n", extendIf)
+				extendIf -= 1
+				continue
+			}
+			if tokens[0] != "if" {
+				runAllowed = true
+			}
+			continue
+		}
+
+		quickCheck(tokens)
+		runTokens(tokens)
+	}
+	if willLoop {
+		if loopDelay {
+			time.Sleep(100 * time.Millisecond)
+		}
+		runProgram(program)
+	}
+}
+
 func main() {
 	if ArrayHas(runtime.GOOS, []string{"windows"}) {
 		pathToFileBlueFun = "<path/to/file.bluefun>"
@@ -551,54 +603,5 @@ Licensed under GNU General Public License v3(https://gnu.org/licenses/gpl-3.0.en
 		return
 	}
 	program = string(fileData)
-	commands := newline.Split(program, -1)
-	if commands[0] == "loop" {
-		willLoop = true
-		commands = commands[1:]
-	}
-	var command string
-	extendIf := 0
-	for _, command = range commands {
-		line += 1
-		command = strings.TrimLeft(command, " ")
-		if strings.HasPrefix(command, "# ") || command == "" {
-			continue
-		}
-		tokens := strings.Split(command, " ")
-
-		if !runAllowed {
-			showDebugF("Stopping execution of line %d: %s\n", line, command)
-			if tokens[0] == "extend" {
-				var toAdd int64 = 2
-				if len(tokens) >= 2 {
-					var numError error
-					toAdd, numError = strconv.ParseInt(tokens[1], 10, 64)
-					if numError != nil {
-						showErrorF("Cannot use %s to extend an if statement, it needs to be an integer.", tokens[1])
-					}
-				}
-				showDebugF("Adding %d from %d\n", int(toAdd), extendIf)
-				extendIf += int(toAdd) - 1
-				continue
-			}
-			if extendIf > 0 {
-				showDebugF("Removing 1 from %d\n", extendIf)
-				extendIf -= 1
-				continue
-			}
-			if tokens[0] != "if" {
-				runAllowed = true
-			}
-			continue
-		}
-
-		quickCheck(tokens)
-		runTokens(tokens)
-	}
-	if willLoop {
-		if loopDelay {
-			time.Sleep(100 * time.Millisecond)
-		}
-		main()
-	}
+	runProgram(program)
 }
